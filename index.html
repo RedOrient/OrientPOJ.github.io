@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Orientpoj.GitHub.io : POJ_1011">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Orientpoj.GitHub.io</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/RedOrient/OrientPOJ.github.io">View on GitHub</a>
+
+          <h1 id="project_title">Orientpoj.GitHub.io</h1>
+          <h2 id="project_tagline">POJ_1011</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/RedOrient/OrientPOJ.github.io/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/RedOrient/OrientPOJ.github.io/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="orientpojgithubio" class="anchor" href="#orientpojgithubio" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>OrientPOJ.github.io</h1>
+<p>POJ_1011</p>
+<p>Sticks
+Time Limit: 1000MS		Memory Limit: 10000K
+Total Submissions: 147984		Accepted: 35082</p>
+<p>简介：
+乔治拿来一组等长的木棒，将它们随机地裁断，使得每一节木棒的长度都不超过50个长度单位。然后他又想把这些木棒恢复到为裁截前的状态，但忘记了木棒的初始长度。请你设计一个程序，帮助乔治计算木棒的可能最小长度。每一节木棒的长度都用大于零的整数表示</p>
+<p>输入：由多个案例组成，每个案例包括两行。第一行是一个不超过64的整数，表示裁截之后共有多少节木棒。第二行是经过裁截后，所得到的各节木棒的长度。在最后一个案例之后，是零。</p>
+<p>输出：为每个案例，分别输出木棒的可能最小长度。每个案例占一行。</p>
+<p>Sample Input
+9
+5 2 1 5 2 1 5 2 1
+4
+1 2 3 4
+0
+Sample Output</p>
+<p>6
+5</p>
+<p>题解：</p>
+<p>我大概理解了一下这个题，是要给我n 木棍碎片，要求还原原木棍，且原木棍等长，问最短长度是多少。</p>
+<p>其实按照我没有接触算法之前的想法，我只能想到暴力解决，虽然最后解决了问题，但是在poj上提交了之后一直</p>
+<p>时间超出，最后我看了一些大神的解答，还有讨论区别人的代码，才知道这是一个剪枝算法题。</p>
+<p>关键在于三个剪枝，如下：</p>
+<p>1.如果某根木棒的长度不能构成，则之后的相同长度的也不行.</p>
+<p>2.如果把某段拿去构成木棒的最后一截后，剩下的无法完成，那么也不可能.</p>
+<p>3.如果在构成某根木棒的第一段时最大的无法用上，那么直接不可能.</p>
+<p>这里贴出代码，现在是2017年9月10日23：22</p>
+<p>代码：</p>
+<p>/*
+注意三个重要剪枝
+2016/11/8
+*/
+#include 
+#include 
+#include</p>
+<p>using namespace std;</p>
+<p>int l[65];          //所有木棍
+int visited[65];    //记录所有木棍是否被访问
+int len;            //木棍
+int n;              //木棍个数
+int sum;            //木棍长和</p>
+<p>bool cmp(int a,int b)
+{
+return a&gt;b;
+}</p>
+<p>bool research(int pos, int res, int cnt)
+{   //如果构成了所有，返回
+if (cnt*len == sum)
+return true;
+for(int i=pos; i&lt;n; i++)
+{
+//如被访问，退出
+/<em>if(visited[i] == 1)
+continue;</em>/
+//1某根木棒的长度不能构成，则之后的相同长度的也不行.
+if(visited[i] || (i &amp;&amp; !visited[i-1] &amp;&amp; l[i] == l[i-1])) continue;</p>
+<pre><code>    if(res+l[i] == len)
+    {
+            visited[i] = 1;    
+            if(research(0, 0, cnt+1))
+                return true;
+            
+            visited[i] = 0;
+            //2如果把某段拿去构成木棒的最后一截后，剩下的无法完成，那么也不可能.
+            return false;
+    }
+    else if(res+l[i] &lt; len)
+    {
+        visited[i] = 1;
+        if(research(pos+1, res+l[i], cnt))
+            return true;
+        visited[i] = 0;
+        //3如果在构成某根木棒的第一段时最大的无法用上，那么直接不可能.
+        if(res == 0) return false;
+    }
+        
+}        
+
+return false;
+</code></pre>
+<p>}</p>
+<p>int solve()
+{
+//整数排序
+sort(l,l+n,cmp);</p>
+<pre><code>          for(len=l[0]; len&lt;sum; len++)
+          {     
+                
+                if(sum%len == 0)
+                {
+                    memset(visited, 0, sizeof(visited));
+                    if(research(0, 0, 0))
+                    {
+                      break;
+                    }  
+                              
+                }
+          }
+        
+        return len;
+</code></pre>
+<p>}
+int main(void)
+{
+while(cin &gt;&gt; n &amp;&amp; n!= 0)
+{<br>
+sum = 0;
+//memset(l,0,sizeof(l));
+for(int i=0; i&lt;n; i++)
+{<br>
+cin &gt;&gt; l[i];
+sum+=l[i];
+}</p>
+<pre><code>          cout &lt;&lt; solve() &lt;&lt; endl;
+   
+}
+system("PAUSE");
+return 0;
+</code></pre>
+<p>}</p>
+<p>补充：这段代码是在DEV-C++上实现完成。</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Orientpoj.GitHub.io maintained by <a href="https://github.com/RedOrient">RedOrient</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
